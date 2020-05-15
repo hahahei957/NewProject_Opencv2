@@ -29,8 +29,9 @@ print("one-hot编码后\n", y_train)
 
 # 构建数据集对象(这里更应该说是加载数据集)  ==》五步加载数据集： https://blog.csdn.net/rainweic/article/details/95737315
 train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
+test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
 # 批量训练
-train_dataset = train_dataset.batch(200)
+train_dataset = train_dataset.batch(200)       # 将train_dataset中的60000个数据分成300份，每份200个样本
 
 model = keras.Sequential([
     keras.layers.Dense(units=512, activation='relu'),                                      # https://blog.csdn.net/weixin_42499236/article/details/84624195
@@ -42,12 +43,13 @@ model = keras.Sequential([
 # 进行训练优化权重的函数
 def train_epoch(epoch):
     # step4
-    for step, (x, y) in enumerate(train_dataset):    # 每次喂进去的样本是200个
+    for step, (x, y) in enumerate(train_dataset):    # 这里会循环300次，每次喂进去200个样本，数据总量是60000=200*300
         # 构建梯度记录环境   在with后面写入要被梯度下降的函数方程  https://blog.csdn.net/xierhacker/article/details/53174558
         with tf.GradientTape() as tape:                         #
             # [b, 28, 28] => [b, 10]   b应该是每次投喂的样本数量，这里应该是200
             x = tf.reshape(x, (-1, 28*28))        # 在进入神经网络之前，我们要将数据flatten一下，这样每个像素点特征就
             # 得到模型的输出结果 output [b, 28*28]==>[b, 10]
+            print("----------------", step)
             out = model(x)
             # 计算每个样本的平均误差， x.shape[0] ==》 [b]样本数量
             # reduce_sum() 用于计算张量tensor沿着某一维度的和，可以在求和后降维。
